@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocIntel &mdash; Document Intelligence Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #0b0f17;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1f2937;
+      --bg-input: #151e2e;
+      --border-subtle: #1f293d;
+      --border-medium: #2e3b52;
+      --border-focus: #3b82f6;
+
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+
+      --accent-primary: #3b82f6;
+      --accent-primary-hover: #2563eb;
+      --accent-primary-light: rgba(59, 130, 246, 0.12);
+
+      --status-success: #10b981;
+      --status-success-bg: rgba(16, 185, 129, 0.12);
+      --status-warning: #f59e0b;
+      --status-warning-bg: rgba(245, 158, 11, 0.12);
+      --status-error: #ef4444;
+      --status-error-bg: rgba(239, 68, 68, 0.12);
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', Consolas, "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      background-color: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .brand-name {
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--accent-primary-light);
+      color: var(--accent-primary);
+      margin-left: 0.25rem;
+    }
+
+    /* Endpoint / Base URL Control */
+    .connection-panel {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 0.35rem 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .connection-panel label {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .connection-panel input {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      outline: none;
+      width: 210px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+
+    .status-online {
+      background: var(--status-success-bg);
+      color: var(--status-success);
+    }
+    .status-online .status-dot {
+      background: var(--status-success);
+      box-shadow: 0 0 8px var(--status-success);
+    }
+
+    .status-offline {
+      background: var(--status-error-bg);
+      color: var(--status-error);
+    }
+    .status-offline .status-dot {
+      background: var(--status-error);
+      box-shadow: 0 0 8px var(--status-error);
+    }
+
+    .status-checking {
+      background: var(--status-warning-bg);
+      color: var(--status-warning);
+    }
+    .status-checking .status-dot {
+      background: var(--status-warning);
+    }
+
+    /* Main Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 0.35rem;
+      background-color: var(--bg-surface);
+      padding: 0.25rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background-color: var(--accent-primary);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1380px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Common Card / Panel Styling */
+    .card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      position: relative;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .card-subtitle {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.15rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-primary);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--accent-primary-hover);
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #283548;
+      border-color: var(--border-medium);
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 960px) {
+      .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+      header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    /* Health Section */
+    .health-metric {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+    }
+
+    .health-metric-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .metric-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .metric-detail {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      word-break: break-all;
+    }
+
+    /* Upload Zone */
+    .dropzone {
+      border: 2px dashed var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      background-color: rgba(21, 30, 46, 0.4);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent-primary);
+      background-color: var(--accent-primary-light);
+    }
+
+    .dropzone input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .dropzone-icon {
+      font-size: 2.2rem;
+      color: var(--accent-primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .dropzone-text {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .dropzone-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    .file-preview {
+      margin-top: 1.25rem;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      overflow: hidden;
+    }
+
+    .file-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .file-meta {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    /* Q&A Chat Section */
+    .qa-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .question-input-wrapper {
+      position: relative;
+    }
+
+    .question-textarea {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      padding-right: 5rem;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: vertical;
+      min-height: 100px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .question-textarea:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 2px var(--accent-primary-light);
+    }
+
+    .ask-btn-inline {
+      position: absolute;
+      right: 0.85rem;
+      bottom: 0.85rem;
+    }
+
+    .sample-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .chip {
+      background-color: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      padding: 0.25rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chip:hover {
+      color: var(--text-main);
+      border-color: var(--border-medium);
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Answer Display */
+    .answer-card {
+      background-color: var(--bg-surface-elevated);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .answer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.85rem;
+    }
+
+    .answer-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .answer-body {
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: var(--text-main);
+      white-space: pre-wrap;
+    }
+
+    .sources-section {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .sources-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.65rem;
+    }
+
+    .sources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .source-pill {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.85rem;
+      font-size: 0.8rem;
+    }
+
+    .source-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      margin-top: 0.35rem;
+      font-family: var(--font-mono);
+    }
+
+    /* API Inspector / Console */
+    .console-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .endpoint-selector {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .method-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+
+    .badge-get { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .badge-post { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+
+    .code-box {
+      background-color: #0d1117;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.825rem;
+      color: #c9d1d9;
+      overflow-x: auto;
+      max-height: 420px;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .copy-btn:hover { color: #fff; border-color: var(--border-medium); }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      z-index: 999;
+    }
+
+    .toast {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-medium);
+      color: var(--text-main);
+      padding: 0.75rem 1.15rem;
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      animation: slideIn 0.2s ease forwards;
+    }
+
+    .toast-success { border-left: 4px solid var(--status-success); }
+    .toast-error { border-left: 4px solid var(--status-error); }
+    .toast-info { border-left: 4px solid var(--accent-primary); }
+
+    @keyframes slideIn {
+      from { transform: translateY(12px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div style="display: flex; align-items: center; gap: 1.75rem; flex-wrap: wrap;">
+      <a href="#" class="brand">
+        <div class="brand-icon">DI</div>
+        <div>
+          <span class="brand-name">DocIntel</span>
+          <span class="brand-tag">v1.0</span>
+        </div>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('dashboard')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg>
+          System Health
+        </button>
+        <button class="tab-btn" onclick="switchTab('ingest')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V10.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
+          Ingest Document
+        </button>
+        <button class="tab-btn" onclick="switchTab('ask')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.678 11.894a1 1 0 0 1 .287.804 10.97 10.97 0 0 1-.398 2c-.088.337.209.64.53.53a15.82 15.82 0 0 0 3.256-1.57.5.5 0 0 1 .306-.104c.328 0 .65.025.967.075 3.398.537 6.38-1.59 6.38-4.633 0-2.887-2.73-5.226-6.22-5.226-3.489 0-6.22 2.339-6.22 5.226 0 1.25.507 2.404 1.365 3.328z"/></svg>
+          Ask &amp; Search (RAG)
+        </button>
+        <button class="tab-btn" onclick="switchTab('api')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+          API Console
+        </button>
+      </nav>
+    </div>
+
+    <!-- API Configuration Controls -->
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <div class="connection-panel">
+        <label for="apiBaseUrl">API:</label>
+        <input type="text" id="apiBaseUrl" value="http://localhost:5151" title="API Base URL (e.g. http://localhost:5151 or https://localhost:7236)">
+        <button class="btn btn-secondary btn-sm" onclick="checkAllHealth()" title="Ping Server Now">Ping</button>
+      </div>
+
+      <div id="connectionStatus" class="status-badge status-checking">
+        <span class="status-dot"></span>
+        <span id="connectionStatusText">Checking</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- SECTION 1: SYSTEM HEALTH & READINESS -->
+    <section id="tab-dashboard" class="tab-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.5rem; font-weight: 700;">Infrastructure Health</h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Real-time readiness status of MongoDB, Ollama, and Semantic Vector Store.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn btn-secondary btn-sm" onclick="fetchHealthEndpoints()">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+            Refresh Now
+          </button>
+          <a class="btn btn-secondary btn-sm" id="openApiDocLink" href="http://localhost:5151/openapi/v1.json" target="_blank" rel="noopener">
+            OpenAPI Spec
+          </a>
+        </div>
+      </div>
+
+      <!-- Overview Cards -->
+      <div class="grid-3" style="margin-bottom: 1.5rem;">
+        <!-- MongoDB Metric -->
+        <div class="health-metric" id="card-mongo">
+          <div class="health-metric-top">
+            <span class="metric-name">MongoDB</span>
+            <span class="status-badge status-checking" id="badge-mongo">Checking</span>
+          </div>
+          <div class="metric-value" id="val-mongo">&mdash;</div>
+          <div class="metric-detail" id="desc-mongo">Connecting to mongodb://localhost:27017...</div>
+        </div>
+
+        <!-- Ollama LLM Metric -->
+        <div class="health-metric" id="card-ollama">
+          <div class="health-metric-top">
+            <span class="metric-name">Ollama Engine</span>
+            <span class="status-badge status-checking" id="badge-ollama">Checking</span>
+          </div>
+          <div class="metric-value" id="val-ollama">&mdash;</div>
+          <div class="metric-detail" id="desc-ollama">Probing llama3.1 &amp; nomic-embed-text...</div>
+        </div>
+
+        <!-- Vector Store Metric -->
+        <div class="health-metric" id="card-vector">
+          <div class="health-metric-top">
+            <span class="metric-name">Vector Store</span>
+            <span class="status-badge status-checking" id="badge-vector">Checking</span>
+          </div>
+          <div class="metric-value" id="val-vector">&mdash;</div>
+          <div class="metric-detail" id="desc-vector">Collection: doc_intel</div>
+        </div>
+      </div>
+
+      <!-- Detailed Diagnostics Card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Endpoint Probes (/health &amp; /health/live)</div>
+            <div class="card-subtitle">Comprehensive JSON telemetry returned by ASP.NET Core Health Checks</div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);" id="healthLatency">
+            Latency: -- ms
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">
+              READINESS (/health)
+            </div>
+            <div class="code-box" id="rawReadinessJson">Loading health report...</div>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">
+              LIVENESS (/health/live)
+            </div>
+            <div class="code-box" id="rawLivenessJson">Loading liveness report...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- SECTION 2: DOCUMENT INGESTION -->
+    <section id="tab-ingest" class="tab-content hidden">
+      <div style="margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 700;">Document Ingestion Studio</h1>
+        <p style="color: var(--text-muted); font-size: 0.875rem;">
+          Upload documents for automated semantic chunking and nomic-embed-text vectorization.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <!-- Ingestion Form -->
+        <div class="card" style="overflow: auto;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">POST /api/ingest</div>
+              <div class="card-subtitle">Accepts multipart/form-data payload with IFormFile 'file'</div>
+            </div>
+          </div>
+
+          <!-- Drop Zone -->
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept=".txt,.md,.csv,.json,.log">
+            <div class="dropzone-icon">📄</div>
+            <div class="dropzone-text">Click or drag a file here to ingest</div>
+            <div class="dropzone-sub">Supported formats: .txt, .md, .csv, .json, .log (Max 10 MB)</div>
+          </div>
+
+          <!-- Selected File Preview -->
+          <div id="selectedFilePreview" class="file-preview hidden">
+            <div class="file-info">
+              <span style="font-size: 1.4rem;">📝</span>
+              <div>
+                <div class="file-name" id="previewFileName">filename.txt</div>
+                <div class="file-meta" id="previewFileMeta">0 KB</div>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="clearSelectedFile()">Clear</button>
+          </div>
+
+          <!-- Text Preview Snippet -->
+          <div id="fileContentPreviewContainer" style="margin-top: 1rem;" class="hidden">
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
+              File Content Preview (first 500 chars):
+            </label>
+            <pre class="code-box" id="fileContentSnippet" style="max-height: 120px; margin-top: 0.35rem; font-size: 0.75rem;"></pre>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <button class="btn btn-primary" id="btnUpload" onclick="uploadDocument()" disabled>
+              <span id="uploadSpinner" class="spinner hidden"></span>
+              <span id="uploadBtnText">Upload &amp; Vectorize</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ingestion Result & Recent Ingestions -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Ingestion Response</div>
+              <div class="card-subtitle">Server response containing generated DocumentId &amp; chunk count</div>
+            </div>
+          </div>
+
+          <div id="ingestResultEmpty" style="padding: 2.5rem 1rem; text-align: center; color: var(--text-dim);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📥</div>
+            No documents ingested in this session yet. Upload a file on the left to see results.
+          </div>
+
+          <div id="ingestResultCard" class="hidden">
+            <div style="background-color: var(--status-success-bg); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--status-success); font-weight: 600;">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                Ingestion Completed Successfully
+              </div>
+              <div id="ingestResponseMessage" style="font-size: 0.875rem; color: var(--text-main); margin-top: 0.4rem;">
+                Successfully vectorized chunks.
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <div class="health-metric">
+                <span class="metric-name">MongoDB Document ID</span>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span class="metric-detail" id="resultDocId" style="font-size: 0.95rem; color: #fff;">--</span>
+                  <button class="btn btn-secondary btn-sm" onclick="copyText('resultDocId')">Copy</button>
+                </div>
+              </div>
+
+              <div class="health-metric">
+                <span class="metric-name">Generated Vector Chunks</span>
+                <span class="metric-value" id="resultChunkCount">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ingestion Session History -->
+          <div style="margin-top: 1.5rem;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+              Session History
+            </div>
+            <div id="ingestHistoryList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto;">
+              <!-- History entries will be appended here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- SECTION 3: RAG ASK & SEARCH -->
+    <section id="tab-ask" class="tab-content hidden">
+      <div style="margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 700;">Document Intelligence Q&amp;A</h1>
+        <p style="color: var(--text-muted); font-size: 0.875rem;">
+          Query ingested documents using semantic vector search and Ollama LLaMA-3.1 chat generation.
+        </p>
+      </div>
+
+      <div class="qa-container">
+        <!-- Question Input Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">POST /api/ask</div>
+              <div class="card-subtitle">Retrieves top 3 matching chunks and feeds context into IChatCompletionService</div>
+            </div>
+          </div>
+
+          <div class="question-input-wrapper">
+            <textarea id="questionInput" class="question-textarea" placeholder="Ask a question about your ingested documents (e.g. 'What are the main key points in the uploaded files?')..." rows="3"></textarea>
+            <button class="btn btn-primary ask-btn-inline" id="btnAsk" onclick="askQuestion()">
+              <span id="askSpinner" class="spinner hidden"></span>
+              <span id="askBtnText">Ask AI</span>
+            </button>
+          </div>
+
+          <!-- Suggested Starter Chips -->
+          <div class="sample-chips">
+            <span style="font-size: 0.75rem; color: var(--text-dim); align-self: center;">Try sample:</span>
+            <span class="chip" onclick="setQuestion('Summarize the main points of the uploaded document.')">Summarize main points</span>
+            <span class="chip" onclick="setQuestion('What are the critical dates and deadlines mentioned?')">Critical dates &amp; deadlines</span>
+            <span class="chip" onclick="setQuestion('List all action items and recommendations.')">Action items</span>
+            <span class="chip" onclick="setQuestion('Explain the key architectural components.')">Architectural components</span>
+          </div>
+        </div>
+
+        <!-- AI Answer Display -->
+        <div id="answerSection" class="card hidden">
+          <div class="answer-header">
+            <span class="answer-title">Assistant Response</span>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span id="queryLatency" style="font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono);"></span>
+              <button class="btn btn-secondary btn-sm" onclick="copyText('answerBody')">Copy Answer</button>
+            </div>
+          </div>
+
+          <div id="answerBody" class="answer-body">
+            Generating response...
+          </div>
+
+          <!-- Citations & Sources -->
+          <div id="sourcesSection" class="sources-section">
+            <div class="sources-title">Retrieved Sources (Top Chunks)</div>
+            <div id="sourcesGrid" class="sources-grid">
+              <!-- Source pills rendered here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Q&A Query History -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Query History</div>
+            <button class="btn btn-secondary btn-sm" onclick="clearHistory()">Clear History</button>
+          </div>
+          <div id="queryHistoryList" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="color: var(--text-dim); font-size: 0.85rem;">No questions asked yet.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- SECTION 4: INTERACTIVE API CONSOLE -->
+    <section id="tab-api" class="tab-content hidden">
+      <div style="margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 700;">Interactive API Console</h1>
+        <p style="color: var(--text-muted); font-size: 0.875rem;">
+          Directly execute, inspect, and debug any endpoint implemented in DocIntel.Api.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <!-- Request Builder -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Request Builder</div>
+          </div>
+
+          <div class="console-pane">
+            <div>
+              <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">SELECT ENDPOINT</label>
+              <div class="endpoint-selector">
+                <button class="btn btn-secondary btn-sm" onclick="selectEndpoint('getHealth')">
+                  <span class="method-badge badge-get">GET</span> /health
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="selectEndpoint('getLive')">
+                  <span class="method-badge badge-get">GET</span> /health/live
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="selectEndpoint('postIngest')">
+                  <span class="method-badge badge-post">POST</span> /api/ingest
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="selectEndpoint('postAsk')">
+                  <span class="method-badge badge-post">POST</span> /api/ask
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span id="consoleMethod" class="method-badge badge-get">GET</span>
+              <input type="text" id="consoleUrl" class="connection-panel" style="flex: 1; padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); width: auto;" value="/health">
+            </div>
+
+            <div id="consoleBodyContainer" class="hidden">
+              <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">REQUEST BODY (JSON)</label>
+              <textarea id="consoleRequestBody" class="code-box" style="width: 100%; height: 110px; resize: vertical;">{
+  "question": "What is the document about?"
+}</textarea>
+            </div>
+
+            <div id="consoleFileContainer" class="hidden">
+              <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">MULTIPART FORM FILE</label>
+              <input type="file" id="consoleFileInput" style="font-size: 0.85rem; color: var(--text-muted);">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+              <button class="btn btn-primary" id="btnExecuteConsole" onclick="executeConsoleRequest()">
+                <span id="consoleSpinner" class="spinner hidden"></span>
+                <span>Send Request</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Response Inspector -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Response Inspector</div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span id="consoleStatusBadge" class="status-badge hidden">200 OK</span>
+              <span id="consoleTiming" style="font-size: 0.8rem; color: var(--text-dim); font-family: var(--font-mono);">-- ms</span>
+            </div>
+          </div>
+
+          <div style="position: relative;">
+            <button class="copy-btn" onclick="copyText('consoleOutput')">Copy</button>
+            <pre class="code-box" id="consoleOutput" style="min-height: 280px; max-height: 480px;">Click "Send Request" to invoke the endpoint...</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification System -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // State
+    const getDefaultApiUrl = () => {
+      const saved = localStorage.getItem('docintel_api_url');
+      if (saved) return saved;
+      if (window.location.protocol.startsWith('http')) {
+        return window.location.origin;
+      }
+      return 'http://localhost:5151';
+    };
+
+    const state = {
+      apiBaseUrl: getDefaultApiUrl(),
+      selectedFile: null,
+      fileTextContent: '',
+      history: JSON.parse(localStorage.getItem('docintel_history') || '[]'),
+      ingestedDocs: JSON.parse(localStorage.getItem('docintel_ingested') || '[]')
+    };
+
+    // DOM References
+    const apiBaseInput = document.getElementById('apiBaseUrl');
+    const openApiDocLink = document.getElementById('openApiDocLink');
+
+    // Init
+    apiBaseInput.value = state.apiBaseUrl;
+    updateOpenApiLink();
+    renderIngestedHistory();
+    renderQueryHistory();
+    loadPersistedDocuments();
+
+    apiBaseInput.addEventListener('change', () => {
+      let val = apiBaseInput.value.trim().replace(/\/+$/, '');
+      if (!val) val = 'http://localhost:5151';
+      state.apiBaseUrl = val;
+      localStorage.setItem('docintel_api_url', val);
+      updateOpenApiLink();
+      checkAllHealth();
+      loadPersistedDocuments();
+    });
+
+    async function loadPersistedDocuments() {
+      try {
+        const res = await fetch(`${state.apiBaseUrl}/api/documents`);
+        if (res.ok) {
+          const docs = await res.json();
+          if (Array.isArray(docs)) {
+            state.ingestedDocs = docs.map(d => ({
+              fileName: d.fileName || d.FileName,
+              documentId: d.id || d.Id,
+              chunkCount: d.chunkCount || d.ChunkCount,
+              timestamp: d.uploadedAt ? new Date(d.uploadedAt).toLocaleString() : ''
+            }));
+            localStorage.setItem('docintel_ingested', JSON.stringify(state.ingestedDocs));
+            renderIngestedHistory();
+          }
+        }
+      } catch (e) {
+        // Fallback to local storage if API is still starting up
+      }
+    }
+
+    function updateOpenApiLink() {
+      if (openApiDocLink) {
+        openApiDocLink.href = `${state.apiBaseUrl}/openapi/v1.json`;
+      }
+    }
+
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => 
+        b.getAttribute('onclick').includes(tabId)
+      );
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.remove('hidden');
+
+      if (tabId === 'dashboard') {
+        fetchHealthEndpoints();
+      } else if (tabId === 'ingest') {
+        loadPersistedDocuments();
+      }
+    }
+
+    // Health Checks
+    async function checkAllHealth() {
+      const connBadge = document.getElementById('connectionStatus');
+      const connText = document.getElementById('connectionStatusText');
+      connBadge.className = 'status-badge status-checking';
+      connText.innerText = 'Checking';
+
+      try {
+        const start = performance.now();
+        const res = await fetch(`${state.apiBaseUrl}/health/live`, { cache: 'no-cache' });
+        const dur = Math.round(performance.now() - start);
+
+        if (res.ok) {
+          connBadge.className = 'status-badge status-online';
+          connText.innerText = `Online (${dur}ms)`;
+        } else {
+          connBadge.className = 'status-badge status-offline';
+          connText.innerText = `HTTP ${res.status}`;
+        }
+      } catch (err) {
+        connBadge.className = 'status-badge status-offline';
+        connText.innerText = 'Unreachable';
+      }
+
+      fetchHealthEndpoints();
+    }
+
+    async function fetchHealthEndpoints() {
+      const readinessBox = document.getElementById('rawReadinessJson');
+      const livenessBox = document.getElementById('rawLivenessJson');
+      const latencyLabel = document.getElementById('healthLatency');
+
+      // 1. Fetch /health (Readiness)
+      try {
+        const start = performance.now();
+        const res = await fetch(`${state.apiBaseUrl}/health`, { cache: 'no-cache' });
+        const latency = Math.round(performance.now() - start);
+        latencyLabel.innerText = `Latency: ${latency} ms`;
+
+        const data = await res.json();
+        readinessBox.innerText = JSON.stringify(data, null, 2);
+
+        // Update MongoDB card
+        const mongo = data.checks?.mongodb;
+        if (mongo) {
+          updateMetricCard('mongo', mongo.status, `${mongo.durationMs || 0}ms`, mongo.description || 'MongoDB ping');
+        } else {
+          updateMetricCard('mongo', 'Unhealthy', 'N/A', 'Check missing');
+        }
+
+        // Update Ollama card
+        const ollama = data.checks?.ollama;
+        if (ollama) {
+          const models = ollama.data?.requiredModels ? ollama.data.requiredModels.join(', ') : 'llama3.1, nomic-embed-text';
+          const missing = ollama.data?.missingModels && ollama.data.missingModels.length > 0 
+            ? `Missing: ${ollama.data.missingModels.join(', ')}` 
+            : ollama.description;
+          updateMetricCard('ollama', ollama.status, models, missing);
+        } else {
+          updateMetricCard('ollama', 'Unhealthy', 'N/A', 'Ollama not responding');
+        }
+
+        // Update Vector Store card
+        const vec = data.checks?.['vector-store'];
+        if (vec) {
+          const colName = vec.data?.collection || 'doc_intel';
+          const exists = vec.data?.collectionExists ? 'Initialized' : 'Empty (Ready)';
+          updateMetricCard('vector', vec.status, colName, `${vec.description} (${exists})`);
+        } else {
+          updateMetricCard('vector', 'Healthy', 'doc_intel', 'Ready for embeddings');
+        }
+
+      } catch (err) {
+        readinessBox.innerText = `Error connecting to ${state.apiBaseUrl}/health\n\n${err.message}\n\nPlease ensure DocIntel.Api is running and CORS is enabled.`;
+        updateMetricCard('mongo', 'Unhealthy', 'Offline', 'API Unreachable');
+        updateMetricCard('ollama', 'Unhealthy', 'Offline', 'API Unreachable');
+        updateMetricCard('vector', 'Unhealthy', 'Offline', 'API Unreachable');
+      }
+
+      // 2. Fetch /health/live (Liveness)
+      try {
+        const resLive = await fetch(`${state.apiBaseUrl}/health/live`, { cache: 'no-cache' });
+        const liveData = await resLive.json();
+        livenessBox.innerText = JSON.stringify(liveData, null, 2);
+      } catch (err) {
+        livenessBox.innerText = `Failed to contact /health/live: ${err.message}`;
+      }
+    }
+
+    function updateMetricCard(id, status, val, desc) {
+      const badge = document.getElementById(`badge-${id}`);
+      const valEl = document.getElementById(`val-${id}`);
+      const descEl = document.getElementById(`desc-${id}`);
+
+      valEl.innerText = val;
+      descEl.innerText = desc;
+
+      if (status === 'Healthy') {
+        badge.className = 'status-badge status-online';
+        badge.innerText = 'Healthy';
+      } else if (status === 'Degraded') {
+        badge.className = 'status-badge status-checking';
+        badge.innerText = 'Degraded';
+      } else {
+        badge.className = 'status-badge status-offline';
+        badge.innerText = 'Unhealthy';
+      }
+    }
+
+    // Drag and Drop & File Upload
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('selectedFilePreview');
+    const previewName = document.getElementById('previewFileName');
+    const previewMeta = document.getElementById('previewFileMeta');
+    const btnUpload = document.getElementById('btnUpload');
+    const contentSnippetContainer = document.getElementById('fileContentPreviewContainer');
+    const contentSnippet = document.getElementById('fileContentSnippet');
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    function handleFileSelection(file) {
+      const allowed = ['.txt', '.md', '.csv', '.json', '.log'];
+      const ext = '.' + file.name.split('.').pop().toLowerCase();
+      if (!allowed.includes(ext)) {
+        showToast(`Unsupported file extension '${ext}'. Allowed: ${allowed.join(', ')}`, 'error');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('File size exceeds the 10 MB limit.', 'error');
+        return;
+      }
+
+      state.selectedFile = file;
+      previewName.innerText = file.name;
+      previewMeta.innerText = `${(file.size / 1024).toFixed(1)} KB • ${ext}`;
+      previewContainer.classList.remove('hidden');
+      dropzone.classList.add('hidden');
+      btnUpload.disabled = false;
+
+      // Read text snippet
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        state.fileTextContent = e.target.result;
+        contentSnippet.innerText = state.fileTextContent.slice(0, 500) + (state.fileTextContent.length > 500 ? '...' : '');
+        contentSnippetContainer.classList.remove('hidden');
+      };
+      reader.readAsText(file);
+    }
+
+    function clearSelectedFile() {
+      state.selectedFile = null;
+      state.fileTextContent = '';
+      fileInput.value = '';
+      previewContainer.classList.add('hidden');
+      contentSnippetContainer.classList.add('hidden');
+      dropzone.classList.remove('hidden');
+      btnUpload.disabled = true;
+    }
+
+    async function uploadDocument() {
+      if (!state.selectedFile) return;
+
+      const spinner = document.getElementById('uploadSpinner');
+      const btnText = document.getElementById('uploadBtnText');
+      btnUpload.disabled = true;
+      spinner.classList.remove('hidden');
+      btnText.innerText = 'Chunking & Embedding...';
+
+      const formData = new FormData();
+      formData.append('file', state.selectedFile);
+
+      try {
+        const res = await fetch(`${state.apiBaseUrl}/api/ingest`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || `HTTP ${res.status}: Upload failed`);
+        }
+
+        // Show result
+        document.getElementById('ingestResultEmpty').classList.add('hidden');
+        const resCard = document.getElementById('ingestResultCard');
+        resCard.classList.remove('hidden');
+
+        document.getElementById('ingestResponseMessage').innerText = data.message || 'File successfully vectorized and stored.';
+        document.getElementById('resultDocId').innerText = data.documentId || '--';
+        document.getElementById('resultChunkCount').innerText = data.chunkCount || '0';
+
+        // Add to history
+        const record = {
+          fileName: state.selectedFile.name,
+          documentId: data.documentId,
+          chunkCount: data.chunkCount,
+          timestamp: new Date().toLocaleTimeString()
+        };
+        state.ingestedDocs.unshift(record);
+        if (state.ingestedDocs.length > 10) state.ingestedDocs.pop();
+        localStorage.setItem('docintel_ingested', JSON.stringify(state.ingestedDocs));
+        renderIngestedHistory();
+
+        showToast(`Vectorized ${data.chunkCount} chunks successfully!`, 'success');
+        clearSelectedFile();
+
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btnUpload.disabled = false;
+        spinner.classList.add('hidden');
+        btnText.innerText = 'Upload & Vectorize';
+      }
+    }
+
+    function renderIngestedHistory() {
+      const list = document.getElementById('ingestHistoryList');
+      if (!list) return;
+      if (state.ingestedDocs.length === 0) {
+        list.innerHTML = '<div style="color: var(--text-dim); font-size: 0.8rem;">No documents ingested yet.</div>';
+        return;
+      }
+      list.innerHTML = state.ingestedDocs.map(doc => `
+        <div class="file-preview" style="margin-top: 0; padding: 0.5rem 0.75rem;">
+          <div>
+            <div style="font-weight: 600; font-size: 0.825rem;">${escapeHtml(doc.fileName)}</div>
+            <div style="font-size: 0.725rem; color: var(--text-dim); font-family: var(--font-mono);">
+              ID: ${escapeHtml(doc.documentId)} • ${doc.chunkCount} chunks • ${doc.timestamp}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Question & RAG Chat
+    function setQuestion(q) {
+      document.getElementById('questionInput').value = q;
+      document.getElementById('questionInput').focus();
+    }
+
+    async function askQuestion() {
+      const qInput = document.getElementById('questionInput');
+      const question = qInput.value.trim();
+      if (!question) {
+        showToast('Please type a question first.', 'error');
+        return;
+      }
+
+      const btnAsk = document.getElementById('btnAsk');
+      const spinner = document.getElementById('askSpinner');
+      const btnText = document.getElementById('askBtnText');
+      const answerSection = document.getElementById('answerSection');
+      const answerBody = document.getElementById('answerBody');
+      const sourcesGrid = document.getElementById('sourcesGrid');
+      const latencyLabel = document.getElementById('queryLatency');
+
+      btnAsk.disabled = true;
+      spinner.classList.remove('hidden');
+      btnText.innerText = 'Searching...';
+
+      answerSection.classList.remove('hidden');
+      answerBody.innerHTML = '<span style="color: var(--text-muted);">Retrieving relevant chunks and consulting model...</span>';
+      sourcesGrid.innerHTML = '';
+
+      try {
+        const start = performance.now();
+        const res = await fetch(`${state.apiBaseUrl}/api/ask`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+
+        const elapsed = Math.round(performance.now() - start);
+        latencyLabel.innerText = `Duration: ${elapsed} ms`;
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || `HTTP ${res.status}: Query failed`);
+        }
+
+        answerBody.innerText = data.answer || '(Empty response)';
+
+        // Render sources
+        if (data.sources && data.sources.length > 0) {
+          sourcesGrid.innerHTML = data.sources.map(s => {
+            const scoreText = s.score !== null && s.score !== undefined ? (s.score).toFixed(4) : 'N/A';
+            return `
+              <div class="source-pill">
+                <div style="font-weight: 600; color: #fff;">${escapeHtml(s.fileName || 'Document')}</div>
+                <div class="source-meta">
+                  <span>Chunk #${s.chunkIndex}</span>
+                  <span style="color: var(--accent-primary);">Sim: ${scoreText}</span>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 2px;">
+                  Doc ID: ${escapeHtml(s.documentId)}
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          sourcesGrid.innerHTML = '<div style="font-size: 0.8rem; color: var(--text-dim);">No specific source references matched.</div>';
+        }
+
+        // Add to history
+        state.history.unshift({
+          question,
+          answer: data.answer,
+          sourcesCount: data.sources?.length || 0,
+          timestamp: new Date().toLocaleTimeString()
+        });
+        if (state.history.length > 8) state.history.pop();
+        localStorage.setItem('docintel_history', JSON.stringify(state.history));
+        renderQueryHistory();
+
+      } catch (err) {
+        answerBody.innerHTML = `<span style="color: var(--status-error);">Error: ${escapeHtml(err.message)}</span>`;
+        showToast(err.message, 'error');
+      } finally {
+        btnAsk.disabled = false;
+        spinner.classList.add('hidden');
+        btnText.innerText = 'Ask AI';
+      }
+    }
+
+    function renderQueryHistory() {
+      const list = document.getElementById('queryHistoryList');
+      if (!list) return;
+      if (state.history.length === 0) {
+        list.innerHTML = '<div style="color: var(--text-dim); font-size: 0.85rem;">No questions asked yet.</div>';
+        return;
+      }
+      list.innerHTML = state.history.map(item => `
+        <div style="background-color: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600;">
+            <span>Q: ${escapeHtml(item.question)}</span>
+            <span style="font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono);">${item.timestamp}</span>
+          </div>
+          <div style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.35rem; line-height: 1.4;">
+            ${escapeHtml(item.answer?.slice(0, 160) || '')}${item.answer?.length > 160 ? '...' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function clearHistory() {
+      state.history = [];
+      localStorage.removeItem('docintel_history');
+      renderQueryHistory();
+      showToast('Query history cleared', 'info');
+    }
+
+    // API Console
+    function selectEndpoint(type) {
+      const methodEl = document.getElementById('consoleMethod');
+      const urlEl = document.getElementById('consoleUrl');
+      const bodyContainer = document.getElementById('consoleBodyContainer');
+      const fileContainer = document.getElementById('consoleFileContainer');
+
+      bodyContainer.classList.add('hidden');
+      fileContainer.classList.add('hidden');
+
+      if (type === 'getHealth') {
+        methodEl.className = 'method-badge badge-get';
+        methodEl.innerText = 'GET';
+        urlEl.value = '/health';
+      } else if (type === 'getLive') {
+        methodEl.className = 'method-badge badge-get';
+        methodEl.innerText = 'GET';
+        urlEl.value = '/health/live';
+      } else if (type === 'postIngest') {
+        methodEl.className = 'method-badge badge-post';
+        methodEl.innerText = 'POST';
+        urlEl.value = '/api/ingest';
+        fileContainer.classList.remove('hidden');
+      } else if (type === 'postAsk') {
+        methodEl.className = 'method-badge badge-post';
+        methodEl.innerText = 'POST';
+        urlEl.value = '/api/ask';
+        bodyContainer.classList.remove('hidden');
+      }
+    }
+
+    async function executeConsoleRequest() {
+      const method = document.getElementById('consoleMethod').innerText;
+      let path = document.getElementById('consoleUrl').value.trim();
+      if (!path.startsWith('/')) path = '/' + path;
+
+      const url = `${state.apiBaseUrl}${path}`;
+      const output = document.getElementById('consoleOutput');
+      const statusBadge = document.getElementById('consoleStatusBadge');
+      const timingLabel = document.getElementById('consoleTiming');
+      const spinner = document.getElementById('consoleSpinner');
+      const btn = document.getElementById('btnExecuteConsole');
+
+      btn.disabled = true;
+      spinner.classList.remove('hidden');
+      output.innerText = `Sending ${method} ${url}...`;
+
+      try {
+        const start = performance.now();
+        let res;
+
+        if (method === 'GET') {
+          res = await fetch(url);
+        } else if (path.includes('/ingest')) {
+          const fileInput = document.getElementById('consoleFileInput');
+          if (!fileInput.files.length) {
+            throw new Error('Please select a file to ingest first.');
+          }
+          const fd = new FormData();
+          fd.append('file', fileInput.files[0]);
+          res = await fetch(url, { method: 'POST', body: fd });
+        } else {
+          const bodyJson = document.getElementById('consoleRequestBody').value;
+          res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: bodyJson
+          });
+        }
+
+        const elapsed = Math.round(performance.now() - start);
+        timingLabel.innerText = `${elapsed} ms`;
+
+        statusBadge.classList.remove('hidden');
+        statusBadge.innerText = `${res.status} ${res.statusText}`;
+        if (res.ok) {
+          statusBadge.className = 'status-badge status-online';
+        } else {
+          statusBadge.className = 'status-badge status-offline';
+        }
+
+        const text = await res.text();
+        try {
+          const parsed = JSON.parse(text);
+          output.innerText = JSON.stringify(parsed, null, 2);
+        } catch {
+          output.innerText = text;
+        }
+
+      } catch (err) {
+        statusBadge.classList.remove('hidden');
+        statusBadge.className = 'status-badge status-offline';
+        statusBadge.innerText = 'Network Error';
+        output.innerText = `Request Failed: ${err.message}\n\nPlease check if ${state.apiBaseUrl} is online and CORS is configured.`;
+      } finally {
+        btn.disabled = false;
+        spinner.classList.add('hidden');
+      }
+    }
+
+    // Utilities
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerText = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    function copyText(elementId) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.innerText || el.value;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard!', 'info');
+      });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Keyboard shortcut (Ctrl+Enter to ask)
+    document.getElementById('questionInput').addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        askQuestion();
+      }
+    });
+
+    // Auto-check health on load
+    window.addEventListener('DOMContentLoaded', () => {
+      checkAllHealth();
+    });
+  </script>
+</body>
+</html>
+

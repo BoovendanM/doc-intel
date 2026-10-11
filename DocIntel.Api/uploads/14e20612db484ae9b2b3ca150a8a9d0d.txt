@@ -1,0 +1,22 @@
+Contoso Remote Work Policy (v2.3)
+
+1. Eligibility
+All full-time employees who have completed their 90-day probation period are eligible to work remotely
+up to three days per week. Contractors must obtain written approval from their engagement manager.
+
+2. Core Hours
+Remote employees must be available between 10:00 AM and 3:00 PM in their local time zone.
+Meetings should be scheduled within core hours whenever possible.
+
+3. Equipment
+Contoso provides a laptop, a monitor and a headset to every remote employee.
+Employees can claim a one-time home office allowance of 500 USD for furniture such as a desk or chair.
+Claims must be submitted through the Expenses portal within 60 days of purchase.
+
+4. Security
+Employees must connect through the corporate VPN when accessing internal systems.
+Company data must never be stored on personal devices or personal cloud storage accounts.
+Lost or stolen equipment must be reported to the IT Service Desk within 24 hours.
+
+5. Internet Reimbursement
+Remote employees are reimbursed up to 40 USD per month for home internet costs.

@@ -1,0 +1,41 @@
+@DocIntel.Api_HostAddress = http://localhost:5151
+
+### Health: full readiness report (MongoDB, Ollama, vector store)
+GET {{DocIntel.Api_HostAddress}}/health
+Accept: application/json
+
+###
+
+### Health: liveness only (no dependency checks)
+GET {{DocIntel.Api_HostAddress}}/health/live
+
+###
+
+### Ingest a plain-text document
+POST {{DocIntel.Api_HostAddress}}/api/ingest
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="sample.txt"
+Content-Type: text/plain
+
+< ./sample.txt
+--boundary--
+
+###
+
+### List ingested documents in MongoDB
+GET {{DocIntel.Api_HostAddress}}/api/documents
+Accept: application/json
+
+###
+
+### Ask a question
+POST {{DocIntel.Api_HostAddress}}/api/ask
+Content-Type: application/json
+
+{
+  "question": "What is this document about?"
+}
+
+###

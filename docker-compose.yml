@@ -1,0 +1,67 @@
+services:
+  # 1. MongoDB Service
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # 2. ChromaDB Service
+  chromadb:
+    image: chromadb/chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+
+  # 3. Ollama Service
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # 4. DocIntel API Service
+  docintel-api:
+    build:
+      context: ./DocIntel.Api
+      dockerfile: Dockerfile
+    ports:
+      - "5151:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MongoDb=mongodb://mongodb:27017
+      - Ollama__Endpoint=http://ollama:11434/v1
+      - Chroma__Endpoint=http://chromadb:8000
+      - Ingestion__UploadFolder=/app/uploads
+    volumes:
+      - DocIntel_FileShare:/app/uploads
+    depends_on:
+      - mongodb
+      - ollama
+      - chromadb
+
+  # 5. DocIntel UI Service
+  docintel-ui:
+    build:
+      context: ./DocIntel.Ui
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - docintel-api
+
+volumes:
+  mongo_data:
+  chroma_data:
+  ollama_data:
+  DocIntel_FileShare:
